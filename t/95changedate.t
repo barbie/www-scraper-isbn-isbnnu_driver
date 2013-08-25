@@ -12,8 +12,8 @@ my $fh = IO::File->new('Changes','r')   or plan skip_all => "Cannot open Changes
 
 plan 'no_plan';
 
-use WWW::Scraper::ISBN::Driver;
-my $version = $WWW::Scraper::ISBN::Driver::VERSION;
+use WWW::Scraper::ISBN::ISBNnu_Driver;
+my $version = $WWW::Scraper::ISBN::ISBNnu_Driver::VERSION;
 
 my $latest = 0;
 while(<$fh>) {

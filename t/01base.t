@@ -4,5 +4,5 @@ use strict;
 use Test::More tests => 1;
 
 BEGIN {
-	use_ok( 'WWW::Scraper::ISBN::Driver' );
+	use_ok( 'WWW::Scraper::ISBN::ISBNnu_Driver' );
 }

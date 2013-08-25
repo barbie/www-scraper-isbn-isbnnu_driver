@@ -14,8 +14,8 @@ plan 'no_plan';
 
 my $meta = meta_spec_ok(undef,undef,@_);
 
-use WWW::Scraper::ISBN::Driver;
-my $version = $WWW::Scraper::ISBN::Driver::VERSION;
+use WWW::Scraper::ISBN::ISBNnu_Driver;
+my $version = $WWW::Scraper::ISBN::ISBNnu_Driver::VERSION;
 
 is($meta->{version},$version,
     'META.json distribution version matches');
