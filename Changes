@@ -5,6 +5,7 @@ Revision history for WWW::Scraper::ISBN::ISBNnu_Driver
         - move module into lib directory structure.
         - change file dates changed to meet W3CDTF standards.
         - reworked Makefile.PL for clarity.
+        - added META.json and updated META.yml.
 
 0.17    2004-04-06
 	    - Removed Exporter and perl versioning stuff by user request
