@@ -8,6 +8,8 @@ Revision history for WWW::Scraper::ISBN::ISBNnu_Driver
         - added META.json and updated META.yml.
         - extended test suite.
         - documentation updates.
+        - switched to WWW::Mechanize.
+        - fixed pattern matching, and updated error handling.
 
 0.18    2004-04-13
         - documentation updates.

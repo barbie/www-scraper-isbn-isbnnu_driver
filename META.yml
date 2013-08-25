@@ -12,8 +12,7 @@ installdirs:              site
 
 requires:
   perl:                           5.006
-  HTTP::Request::Common:          1.19
-  LWP::UserAgent:                 2.00
+  WWW::Mechanize:                 1.60
   WWW::Scraper::ISBN::Driver:     0.15
 recommends:
   Test::CPAN::Meta:               0

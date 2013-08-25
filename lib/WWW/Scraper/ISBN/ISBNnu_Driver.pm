@@ -3,84 +3,107 @@ package WWW::Scraper::ISBN::ISBNnu_Driver;
 use strict;
 use warnings;
 
-use HTTP::Request::Common;
-use LWP::UserAgent;
-use WWW::Scraper::ISBN::Driver;
-
-our @ISA = qw(WWW::Scraper::ISBN::Driver);
-
 our $VERSION = '0.18';
 
-sub clean_authors {
-	my $self = shift;
-    my $authors_with_tags = shift;
-    my @authors = split('<br>', $authors_with_tags);
-    foreach my $author (@authors) {
-        $author =~ s/<[^>]+>//g;
-    }
-    return join(", ", @authors);
-}
+#--------------------------------------------------------------------------
+
+###########################################################################
+# Inheritence
+
+use base qw(WWW::Scraper::ISBN::Driver);
+
+###########################################################################
+# Modules
+
+use WWW::Mechanize;
+
+###########################################################################
+# Variables
+
+my $IN2MM = 0.0393700787;   # number of inches in a millimetre (mm)
+my $LB2G  = 0.00220462;     # number of pounds (lbs) in a gram
+my $OZ2G  = 0.035274;       # number of ounces (oz) in a gram
+
+#--------------------------------------------------------------------------
+
+###########################################################################
+# Public Interface
 
 sub trim {
-	my $self = shift;
-    $_ = shift;
-    s/^\s+//;           # trim leading whitespace
-    s/\s+$//;           # trim trailing whitespace
-    s/\n//g;            # trim newlines?
-    s/ +/ /g;           # trim extra middle space
-    return $_;
+	my ($self,$value) = @_;
+
+    return ''   unless(defined $value);
+
+    $value =~ s/^\s+//;         # trim leading whitespace
+    $value =~ s/\s+$//;         # trim trailing whitespace
+    $value =~ s/\n//g;          # trim newlines?
+    $value =~ s/ +/ /g;         # trim extra middle space
+    $value =~ s/<[^>]+>//g;     # remove tags
+
+    return $value;
 }
                 
 sub search {
-    my $self = shift;
-    my $isbn = shift;
+    my ($self,$isbn) = @_;
+    my %data;
+    
     $self->found(0);
     $self->book(undef);
+
     my $post_url = "http://isbn.nu/".$isbn;
-    my $ua = new LWP::UserAgent;
-    my $res = $ua->request(GET $post_url);
-    my $doc = $res->as_string;
-        
-    my $volume = "";
-    my $edition = "";
-    my $title = "";
-                
-    if ($doc =~ /<p class="rsheadnr"><font color="#333366">([^<]+)<\/font><\/p>/) {
-        $title = $self->trim($1);
+	my $mech = WWW::Mechanize->new();
+    $mech->agent_alias( 'Linux Mozilla' );
+    $mech->add_header( 'Accept-Encoding' => undef );
+
+    eval { $mech->get( $post_url ) };
+    return $self->handler("isbn.nu website appears to be unavailable.")
+        if($@ || !$mech->success() || !$mech->content());
+
+    my $html = $mech->content();
+    if ($html =~ /<title>([^<]+)<\/title>/) {
+        $data{title} = $self->trim($1);
     }
 
-    if (($title eq "") || ($title eq "No Title Found")) {
-        $self->found(0);
-        return 0;
-    } else {
-		$self->found(1);
-	}
+    return $self->handler("Failed to find that book on the isbn.nu website.")
+        if (($data{title} eq "") || ($data{title} eq "No Title Found"));
 
-    $doc =~ /<td class="smallbold" align="left" valign="top" width="35%">Authors*<\/td><td class="bodytext" align="left" valign="top">(.+)<\/td><\/tr>/;
-    my $tempauthors = $1;
-    my $authors = "";
-    my $sep = "";
-    while ($tempauthors =~ s/<a href="[^"]+">([^<]+)<\/a>(<br>)*//) {
-        $authors .=  $sep.$1;
-        $sep = ", ";
-    }
-         
-    if ($doc =~ /<tr><td class="smallbold" align="left" valign="top" width="35%">Edition<\/td><td class="bodytext" align="left" valign="top">([^<]+)<\/td><\/tr>/) {
-        $edition = $1;
-    }
-         
-    if ($doc =~ /<tr><td class="smallbold" align="left" valign="top" width="35%">Volume<\/td><td class="bodytext" align="left" valign="top">([^<]+)<\/td><\/tr>/) {
-        $volume = $1;
+    ($data{publisher})  = $html =~ m!<span class="bi_col_title">Publisher</span>\s*<span class="bi_col_value">([^<]+)</span></div>!si;
+    ($data{pubdate})    = $html =~ m!<span class="bi_col_title">Publication date</span>\s*<span class="bi_col_value">([^<]+)</span></div>!;
+    ($data{pages})      = $html =~ m!<span class="bi_col_title">Pages</span>\s*<span class="bi_col_value">([0-9]+)</span></div>!;
+    ($data{edition})    = $html =~ m!<span class="bi_col_title">Edition</span>\s*<span class="bi_col_value">([^<]+)</span></div>!;
+    ($data{volume})     = $html =~ m!<span class="bi_col_title">Volume</span>\s*<span class="bi_col_value">([^<]+)</span></div>!;
+    ($data{binding})    = $html =~ m!<span class="bi_col_title">Binding</span>\s*<span class="bi_col_value">([^<]+)</span></div>!;
+    ($data{isbn13})     = $html =~ m!<span class="bi_col_title">ISBN-13</span>\s*<span class="bi_col_value">([0-9]+)</span></div>!;
+    ($data{isbn10})     = $html =~ m!<span class="bi_col_title">ISBN-10</span>\s*<span class="bi_col_value">([0-9X]+)</span></div>!;
+    ($data{weight})     = $html =~ m!<span class="bi_col_title">Weight</span>\s*<span class="bi_col_value">([0-9\.]+) lbs.</span></div>!;
+    ($data{author})     = $html =~ m!<div class="d_descriptive">By\s*(.*?)\s*</div>!;
+    ($data{description})= $html =~ m!<div class="bi_annotation_text"><div class="bi_anno_text_head">Summary</div>([^<]+)<!;
+    ($data{description})= $html =~ m!<div class="bi_wide bi_annotation_text"><a name="amazondesc"></a><b>Amazon.com description:</b> <b>Product Description</b>:([^<]+)<!   unless($data{description});
+
+    $data{$_} = $self->trim($data{$_})  for(qw(publisher pubdate binding author description));
+
+    if($data{weight}) {
+        $data{weight} = int($data{weight} / $LB2G);
     }
 
-    my $bk = {   
-        'isbn' => $isbn,
-        'author' => $authors,
-        'title' => $title,
-        'edition' => $edition,
-    };
-	$self->book($bk);
-    return $bk;
+    my @size = $html =~ m!<span class="bi_col_title">Dimensions</span>\s*<span class="bi_col_value">([0-9\.]+) by ([0-9\.]+) by ([0-9\.]+) in.</span></div>!;
+    if(@size) {
+        ($data{depth},$data{width},$data{height}) = sort @size;    
+        $data{$_} = int($data{$_} / $IN2MM)  for(qw( height width depth ));
+    }
+
+#print STDERR "#html=".Dumper(\%data)."\n";
+
+    $data{book_link} = $mech->uri();
+
+    $data{ean13} = $data{isbn13};
+    $data{isbn}  = $data{isbn13} || $isbn;
+    $data{html}  = $html;
+
+	$self->book(\%data);
+
+    $self->found(1);
+    return $self->book;
 }
 
 1;
