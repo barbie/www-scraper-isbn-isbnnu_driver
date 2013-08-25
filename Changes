@@ -9,6 +9,9 @@ Revision history for WWW::Scraper::ISBN::ISBNnu_Driver
         - extended test suite.
         - documentation updates.
 
+0.18    2004-04-13
+        - documentation updates.
+
 0.17    2004-04-06
 	    - Removed Exporter and perl versioning stuff by user request
 

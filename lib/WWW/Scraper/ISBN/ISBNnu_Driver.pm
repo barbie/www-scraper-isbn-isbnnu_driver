@@ -136,6 +136,8 @@ following fields are returned:
    title
    edition
 
+=back
+
 =head1 SEE ALSO
 
 =over 4
