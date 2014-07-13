@@ -140,10 +140,6 @@ Searches for book information from http://www.isbn.nu/.
 
 =over 4
 
-=item C<clean_authors()>
-
-Cleans junk from authors field.
-
 =item C<trim()>
 
 Trims excess whitespace.
