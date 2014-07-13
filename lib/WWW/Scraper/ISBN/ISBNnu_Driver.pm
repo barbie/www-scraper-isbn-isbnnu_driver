@@ -60,9 +60,8 @@ sub search {
         if($@ || !$mech->success() || !$mech->content());
 
     my $html = $mech->content();
-    if ($html =~ /<title>([^<]+)<\/title>/) {
-        $data{title} = $self->trim($1);
-    }
+    my ($title) = $html =~ /<title>([^<]+)<\/title>/;
+    $data{title} = $self->trim($title);
 
     return $self->handler("Failed to find that book on the isbn.nu website.")
         if (!$data{title} || $data{title} eq "No Title Found");
