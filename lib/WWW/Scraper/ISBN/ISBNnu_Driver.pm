@@ -150,10 +150,24 @@ Grabs page from L<http://www.isbn.nu/>'s handy interface and attempts to
 extract the desired information.  If a valid result is returned the 
 following fields are returned:
 
-   isbn
-   author
-   title
-   edition
+  isbn          (now returns isbn13)
+  isbn10        
+  isbn13
+  ean13         (industry name)
+  title
+  author
+  edition
+  volume
+  book_link
+  publisher
+  pubdate
+  binding       (if known)
+  pages         (if known)
+  weight        (if known) (in grammes)
+  width         (if known) (in millimetres)
+  height        (if known) (in millimetres)
+  depth         (if known) (in millimetres)
+  description   (if known)
 
 =back
 
