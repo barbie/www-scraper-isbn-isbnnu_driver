@@ -1,6 +1,7 @@
 Revision history for WWW-Scraper-ISBN-ISBNnu_Driver
 ===================================================
 
+0.23    2014-08-07
         - reworked test failure checks.
 
 0.22    2014-07-21
