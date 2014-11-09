@@ -1,6 +1,8 @@
 Revision history for WWW-Scraper-ISBN-ISBNnu_Driver
 ===================================================
 
+        - fixed license fields in META.json to be lists.
+
 0.23    2014-08-07
         - reworked test failure checks.
 
