@@ -30,7 +30,7 @@ my $OZ2G  = 0.035274;       # number of ounces (oz) in a gram
 # Public Interface
 
 sub trim {
-	my ($self,$value) = @_;
+    my ($self,$value) = @_;
 
     return ''   unless(defined $value);
 
@@ -51,7 +51,7 @@ sub search {
     $self->book(undef);
 
     my $post_url = "https://isbn.nu/".$isbn;
-	my $mech = WWW::Mechanize->new();
+    my $mech = WWW::Mechanize->new();
     $mech->agent_alias( 'Linux Mozilla' );
     $mech->add_header( 'Accept-Encoding' => undef );
 
@@ -97,9 +97,9 @@ sub search {
 
     $data{ean13} = $data{isbn13};
     $data{isbn}  = $data{isbn13} || $isbn;
-#    $data{html}  = $html;
+    $data{html}  = $html;
 
-	$self->book(\%data);
+    $self->book(\%data);
 
     $self->found(1);
     return $self->book;
